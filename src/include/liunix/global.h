@@ -47,7 +47,7 @@ typedef struct selector_t
 // 全局描述符表指针
 typedef struct pointer_t
 {
-    u16 limit;
+    u16 limit;  // 字节size -·1
     u32 base;
 } _packed pointer_t;
 

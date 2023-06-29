@@ -23,7 +23,7 @@ detect_memory:  ; 内存检测
         jc error
 
         add di, cx
-        inc word [ards_count]
+        inc dword [ards_count]
 
         cmp ebx, 0
         jnz .next
@@ -91,6 +91,11 @@ protected_mode:
     mov ecx, 10  ; 起始扇区
     mov bl, 200  ; 读写扇区数量
     call read_disk   ; 读入内核
+
+    mov eax, 0x20010822  ; 内核魔数
+    mov ebx, ards_count  ; ards数量指针
+
+
     jmp code_selector:0x10000  ; 跳转到内核执行
     ud2  ; 表示出错
 jmp $
@@ -195,5 +200,5 @@ gdt_data:
 gdt_end:
 
 ards_count:
-    dw 0
+    dd 0
 ards_buffer:

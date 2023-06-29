@@ -1,1 +1,5 @@
 *.txt
+*.vscode
+*.ini
+bochsrc
+mds/
