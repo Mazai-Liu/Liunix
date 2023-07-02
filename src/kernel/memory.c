@@ -4,6 +4,7 @@
 #include <liunix/assert.h>
 #include <liunix/stdlib.h>
 #include <liunix/string.h>
+#include <liunix/bitmap.h>
 
 #define LOGK(fmt, args...) DEBUGK(fmt, ##args)
 // #define LOGK(fmt, args...)
@@ -23,6 +24,11 @@
 #define PAGE(idx) ((u32)idx << 12)             // 获取页索引 idx 对应的页开始的位置
 #define ASSERT_PAGE(addr) assert((addr & 0xfff) == 0)
 
+#define KERNEL_MEMORY_SIZE (0x100000 * sizeof(KERNEL_PAGE_TABLE))
+
+#define KERNEL_MAP_BITS 0x4000
+
+bitmap_t kernel_map;
 
 typedef struct ards_t
 {
@@ -40,7 +46,7 @@ static u32 free_pages = 0;  // 空闲内存页数
 
 static u32 start_page = 0;   // 可分配物理内存起始位置
 static u8 *memory_map;       // 物理内存数组
-static u32 memory_map_pages; // 物理内存数组占用的页数
+static u32 memory_map_pages; // 映射页占用的页数
 
 // 物理内存开始的memory_map_pages个页，用来管理物理内存
 void memory_map_init()
@@ -58,7 +64,7 @@ void memory_map_init()
     // 清空物理内存数组
     memset((void *)memory_map, 0, memory_map_pages * PAGE_SIZE);
 
-    // 前 1M 的内存位置 以及 物理内存数组已占用的页，已被占用
+    // 前 1M 的内存位置 以及 映射页已占用的页，已被占用
     start_page = IDX(MEMORY_BASE) + memory_map_pages;
     for (size_t i = 0; i < start_page; i++)
     {
@@ -67,10 +73,11 @@ void memory_map_init()
 
     LOGK("Total pages %d free pages %d\n", total_pages, free_pages);
 
-    // // 初始化内核虚拟内存位图，需要 8 位对齐
-    // u32 length = (IDX(KERNEL_MEMORY_SIZE) - IDX(MEMORY_BASE)) / 8;
-    // bitmap_init(&kernel_map, (u8 *)KERNEL_MAP_BITS, length, IDX(MEMORY_BASE));
-    // bitmap_scan(&kernel_map, memory_map_pages);
+    // 初始化内核虚拟内存位图，需要 8 位对齐
+    u32 length = (IDX(KERNEL_MEMORY_SIZE) - IDX(MEMORY_BASE)) / 8;
+    bitmap_init(&kernel_map, (u8 *)KERNEL_MAP_BITS, length, IDX(MEMORY_BASE));
+    // 将映射页标记为占用
+    bitmap_scan(&kernel_map, memory_map_pages);
 }
 
 // 分配一页物理内存
@@ -118,30 +125,26 @@ static void put_page(u32 addr){
 
 
 // 得到 cr2 寄存器
-u32 get_cr2()
-{
+u32 get_cr2(){
     // 直接将 mov eax, cr2，返回值在 eax 中
     asm volatile("movl %cr2, %eax\n");
 }
 
 // 得到 cr3 寄存器
-u32 get_cr3()
-{
+u32 get_cr3(){
     // 直接将cr3的值放到eax，返回值在 eax 中
     asm volatile("movl %cr3, %eax\n");
 }
 
 // 设置 cr3 寄存器，参数是页目录的地址
-void set_cr3(u32 pde)
-{
+void set_cr3(u32 pde){
     ASSERT_PAGE(pde);
     // 执行汇编前，先将pde的值放入eax
     asm volatile("movl %%eax, %%cr3\n" ::"a"(pde));
 }
 
 // 将 cr0 寄存器最高位 PG 置为 1，启用分页
-static inline void enable_page()
-{
+static inline void enable_page(){
     // 0b1000_0000_0000_0000_0000_0000_0000_0000
     // 0x80000000
     asm volatile(
@@ -151,8 +154,7 @@ static inline void enable_page()
 }
 
 // 初始化页表项
-static void entry_init(page_entry_t *entry, u32 index)
-{
+static void entry_init(page_entry_t *entry, u32 index){
     *(u32 *)entry = 0;
     entry->present = 1;
     entry->write = 1;
@@ -160,20 +162,8 @@ static void entry_init(page_entry_t *entry, u32 index)
     entry->index = index;
 }
 
-// 内核页目录
-#define KERNEL_PAGE_DIR 0x1000
-
-static u32 KERNEL_PAGE_TABLE[] = {
-    0x2000,
-    0x3000,
-};
-
-// 内核页表
-#define KERNEL_MEMORY_SIZE (0x100000 * sizeof(KERNEL_PAGE_TABLE))
-
 // 初始化内存映射
-void mapping_init()
-{
+void mapping_init(){
     page_entry_t *pde = (page_entry_t *)KERNEL_PAGE_DIR;
     memset(pde, 0, PAGE_SIZE);
 
@@ -220,11 +210,6 @@ static page_entry_t *get_pte(u32 vaddr) {
 static void flush_tlb(u32 vaddr) {
     asm volatile("invlpg (%0)" ::"r"(vaddr)
                  : "memory");
-}
-
-void memory_test() {
-    page_entry_t *ptr = get_pde();
-    DEBUGK("%p", ptr);
 }
 
 void memory_init(u32 magic, u32 addr)
@@ -299,5 +284,66 @@ void memory_init(u32 magic, u32 addr)
     {
         panic("System memory is %dM too small, at least %dM needed\n",
               memory_size / MEMORY_BASE, KERNEL_MEMORY_SIZE / MEMORY_BASE);
+    }
+}
+
+// 从位图中扫描 count 个连续的页
+static u32 scan_page(bitmap_t *map, u32 count)
+{
+    assert(count > 0);
+    int32 index = bitmap_scan(map, count);
+
+    if (index == EOF)
+    {
+        panic("Scan page fail!!!");
+    }
+
+    u32 addr = PAGE(index);
+    LOGK("Scan page 0x%p count %d\n", addr, count);
+    return addr;
+}
+
+// 与 scan_page 相对，重置相应的页
+static void reset_page(bitmap_t *map, u32 addr, u32 count)
+{
+    ASSERT_PAGE(addr);
+    assert(count > 0);
+    u32 index = IDX(addr);
+
+    for (size_t i = 0; i < count; i++)
+    {
+        assert(bitmap_test(map, index + i));
+        bitmap_set(map, index + i, 0);
+    }
+}
+
+// 分配 count 个连续的内核页
+u32 alloc_kpage(u32 count)
+{
+    assert(count > 0);
+    u32 vaddr = scan_page(&kernel_map, count);
+    LOGK("ALLOC kernel pages 0x%p count %d\n", vaddr, count);
+    return vaddr;
+}
+
+// 释放 count 个连续的内核页
+void free_kpage(u32 vaddr, u32 count)
+{
+    ASSERT_PAGE(vaddr);
+    assert(count > 0);
+    reset_page(&kernel_map, vaddr, count);
+    LOGK("FREE  kernel pages 0x%p count %d\n", vaddr, count);
+}
+
+void memory_test() {
+    u32 *page = (u32 *)(0x200000);
+    u32 count = 0x6ff;
+    for(size_t i = 0; i < count; i ++) {
+        page[i] = alloc_kpage(1);
+        DEBUGK("0x%x\n", i);
+    }
+
+    for(size_t i = 0; i < count; i ++) {
+        free_kpage(page[i], 1);
     }
 }

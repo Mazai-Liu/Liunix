@@ -50,22 +50,23 @@ void clock_handler(int vector)
 {
     assert(vector == 0x20);
     send_eoi(vector); // 发送中断处理结束
+    stop_beep();
 
     jiffies++;
     DEBUGK("clock jiffies %d ...\n", jiffies);
 
     // timer_wakeup();
 
-    // task_t *task = running_task();
-    // assert(task->magic == ONIX_MAGIC);
+    task_t *task = running_task();
+    assert(task->magic == LIUNIX_MAGIC);
 
-    // task->jiffies = jiffies;
-    // task->ticks--;
-    // if (!task->ticks)
-    // {
-    //     schedule();
-    // }
-    stop_beep();
+    task->jiffies = jiffies;
+    task->ticks--;
+    if (!task->ticks)
+    {
+        task->ticks = task->priority;
+        schedule();
+    }
 }
 
 // extern u32 startup_time;

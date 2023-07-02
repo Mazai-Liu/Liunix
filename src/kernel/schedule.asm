@@ -1,3 +1,7 @@
+[bits 32]
+
+section .text
+
 global task_switch
 task_switch:
     push ebp
@@ -8,7 +12,7 @@ task_switch:
     push edi
 
     mov eax, esp
-    and eax, pxfffff000  ; current
+    and eax, 0xfffff000  ; current
 
     mov [eax], esp
     mov eax, [ebp + 8] ;next
