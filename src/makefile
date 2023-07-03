@@ -40,10 +40,12 @@ $(BUILD)/kernel.bin: $(BUILD)/kernel/start.o \
 	$(BUILD)/kernel/memory.o \
 	$(BUILD)/kernel/task.o \
 	$(BUILD)/kernel/schedule.o \
+	$(BUILD)/kernel/gate.o \
 	$(BUILD)/lib/string.o \
 	$(BUILD)/lib/vsprintf.o \
 	$(BUILD)/lib/stdlib.o \
 	$(BUILD)/lib/bitmap.o \
+	$(BUILD)/lib/syscall.o \
 	
 	$(shell mkdir -p $(dir $@))
 	ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)

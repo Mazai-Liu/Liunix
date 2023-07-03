@@ -50,6 +50,27 @@ interrupt_entry:
 
     iret
 
+global interrupt_exit
+interrupt_exit:
+
+    ; 对应 push eax，调用结束恢复栈
+    add esp, 4
+
+    ; ; 调用信号处理函数
+    ; call task_signal
+
+    ; 恢复下文寄存器信息
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+
+    ; 对应 push %1
+    ; 对应 error code 或 push magic
+    add esp, 8
+    iret
+
 
 
 INTERRUPT_HANDLER 0x00, 0; divide by zero
@@ -163,3 +184,49 @@ handler_entry_table:
     dd interrupt_handler_0x2d
     dd interrupt_handler_0x2e
     dd interrupt_handler_0x2f
+
+section .text
+
+extern syscall_check
+extern syscall_table
+global syscall_handler
+syscall_handler:
+    ; xchg bx, bx
+
+    ; 验证系统调用号
+    push eax
+    call syscall_check
+    add esp, 4
+
+    push 0x20010822
+
+    push 0x80
+
+    ; 保存上文寄存器信息
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+
+    push 0x80; 向中断处理函数传递参数中断向量 vector
+    ; xchg bx, bx
+
+    ; push ebp; 第六个参数
+    ; push edi; 第五个参数
+    ; push esi; 第四个参数
+    push edx; 第三个参数
+    push ecx; 第二个参数
+    push ebx; 第一个参数
+
+    ; 调用系统调用处理函数，syscall_table 中存储了系统调用处理函数的指针
+    call [syscall_table + eax * 4]
+
+    ; xchg bx, bx
+    add esp, (3 * 4); 系统调用结束恢复栈
+
+    ; 修改栈中 eax 寄存器，设置系统调用返回值
+    mov dword [esp + 8 * 4], eax
+
+    ; 跳转到中断返回
+    jmp interrupt_exit

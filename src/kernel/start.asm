@@ -15,5 +15,6 @@ _start:
     call memory_init    ; 初始化内存
     call kernel_init    ; 初始化内核
 
+    ; mov eax, 1
     ; int 0x80
     jmp $

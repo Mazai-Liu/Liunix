@@ -1,5 +1,7 @@
 *.txt
 *.vscode
 *.ini
-./bochsrc.*
+build
+src/bochsrc
+src/*.ini
 mds
