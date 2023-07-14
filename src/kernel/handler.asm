@@ -23,7 +23,6 @@ interrupt_entry:
     push es
     push fs
     push gs
-
     ; 8个通用寄存器
     pusha
 
@@ -39,6 +38,7 @@ interrupt_entry:
     ; 对应push %1, 调用结束后恢复栈
     add esp, 4
 
+
     ; 恢复下文寄存器信息
     popa
     pop gs
@@ -48,27 +48,6 @@ interrupt_entry:
 
     add esp, 8
 
-    iret
-
-global interrupt_exit
-interrupt_exit:
-
-    ; 对应 push eax，调用结束恢复栈
-    add esp, 4
-
-    ; ; 调用信号处理函数
-    ; call task_signal
-
-    ; 恢复下文寄存器信息
-    popa
-    pop gs
-    pop fs
-    pop es
-    pop ds
-
-    ; 对应 push %1
-    ; 对应 error code 或 push magic
-    add esp, 8
     iret
 
 
@@ -230,3 +209,24 @@ syscall_handler:
 
     ; 跳转到中断返回
     jmp interrupt_exit
+
+global interrupt_exit
+interrupt_exit:
+
+    ; 对应 push eax，调用结束恢复栈
+    add esp, 4
+
+    ; ; 调用信号处理函数
+    ; call task_signal
+
+    ; 恢复下文寄存器信息
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+
+    ; 对应 push %1
+    ; 对应 error code 或 push magic
+    add esp, 8
+    iret
