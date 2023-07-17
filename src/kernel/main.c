@@ -12,6 +12,7 @@ extern void set_interrupt_state();
 extern void task_init();
 extern void syscall_init();
 
+
 void kernel_init()
 {
     memory_map_init();
@@ -21,10 +22,9 @@ void kernel_init()
     // time_init();
     // rtc_init();
 
-    syscall_init();
     task_init();
-
-
+    syscall_init();
+    
     set_interrupt_state(1);
     return;
 }

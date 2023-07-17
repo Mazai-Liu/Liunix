@@ -8,13 +8,15 @@
 #include <liunix/bitmap.h>
 #include <liunix/types.h>
 #include <liunix/syscall.h>
+#include <liunix/list.h>
 
 extern bitmap_t kernel_map;
 extern void task_switch(task_t *next);
 
 #define TASK_NR 64
 
-task_t *task_table[TASK_NR]; // 任务表,所有任务
+static task_t *task_table[TASK_NR];     // 任务表
+static list_t block_list;               // 任务默认阻塞链表
 
 static task_t *get_free_task() {
     for(size_t i = 0; i < 64; i ++) {
@@ -53,6 +55,32 @@ static task_t *task_search(task_state_t state)
 
     return task;
 }
+
+void task_block(task_t *task, list_t *blist, task_state_t state) {
+    assert(!get_interrupt_state());
+    assert(task->node.next == NULL);    // 未加入到别的链表中
+    assert(task->node.prev == NULL);
+
+    if(blist == NULL) {
+        blist = &block_list;
+    }
+
+    list_push(blist, &task->node);
+    task->state = state;
+
+    task_t *current = running_task();
+    if(current == task) {
+        schedule();
+    }
+}
+
+void task_unblock(task_t *task) {
+    assert(!get_interrupt_state());
+    list_remove(&task->node);
+
+    task->state = TASK_READY;
+}
+
 
 task_t *running_task()
 {
@@ -174,27 +202,30 @@ u32 thread_a() {
     set_interrupt_state(true);
     while(true) {
         printk("a");
-        yield();
+        test();
     }
 }
 u32 thread_b() {
     set_interrupt_state(true);
     while(true) {
         printk("b");
-        yield();
+        test();
     }
 }
 u32 thread_c() {
     set_interrupt_state(true);
     while(true) {
         printk("c");
-        yield();
+        test();
     }
 }
 
 void task_init() {
+    list_init(&block_list);
+
     task_setup();
+
     task_create(thread_a, "a", 5, KERNEL_USER);
     task_create(thread_b, "b", 5, KERNEL_USER);
-    task_create(thread_c, "c", 5, KERNEL_USER);
+    // task_create(thread_c, "c", 5, KERNEL_USER);
 }

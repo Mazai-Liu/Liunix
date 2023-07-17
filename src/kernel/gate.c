@@ -24,9 +24,21 @@ static u32 sys_default()
     return 255;
 }
 
-static void sys_test()
+task_t *task = NULL;
+
+static u32 sys_test()
 {
-    DEBUGK("syscall test!!!");
+    // DEBUGK("syscall test!!!");
+
+    if(!task) {
+        task = running_task();
+        task_block(task, NULL, TASK_BLOCKED);
+    } else {
+        task_unblock(task);
+        task = NULL;
+    }
+
+    return 255;
 }
 
 extern int task_yield();
