@@ -64,5 +64,6 @@ typedef enum syscall_t
 
 u32 test();
 void yield();
+void sleep();
 
 #endif

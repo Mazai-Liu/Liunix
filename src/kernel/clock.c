@@ -53,9 +53,9 @@ void clock_handler(int vector)
     stop_beep();
 
     jiffies++;
-    DEBUGK("clock jiffies %d ...\n", jiffies);
+    // DEBUGK("clock jiffies %d ...\n", jiffies);
 
-    // timer_wakeup();
+    task_wakeup();
 
     task_t *task = running_task();
     assert(task->magic == LIUNIX_MAGIC);
