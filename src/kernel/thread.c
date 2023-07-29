@@ -17,16 +17,24 @@ void idle_thread() {
         yield();
     }
 }
-mutex_t *mutex;
+mutex_t mutex;
+lock_t lock;
 void init_thread() {
-    mutex_init(&mutex);
+    lock_init(&lock);
+    // mutex_init(&mutex);
     set_interrupt_state(true);
     u32 counter = 0;
     while(true) {
-        mutex_lock(&mutex);
-        LOGK("init_task...%d\n", counter++);
-        mutex_unlock(&mutex);
-        // sleep(500);
+        // mutex_lock(&mutex);
+        lock_acquire(&lock);
+        
+        LOGK("init lock...\n");
+        // LOGK("init_task...%d\n", counter++);
+
+        
+        LOGK("init unlock...\n");
+        lock_release(&lock);
+        // mutex_unlock(&mutex);
     }
 }
 
@@ -34,9 +42,15 @@ void test_thread() {
     set_interrupt_state(true);
     u32 counter = 0;
     while(true) {
-        mutex_lock(&mutex);
-        LOGK("test_task...%d\n", counter++);
-        mutex_unlock(&mutex);
-        // sleep(803);
+        // mutex_lock(&mutex);
+        lock_acquire(&lock);
+
+        LOGK("test lock...\n");
+        // LOGK("test_task...%d\n", counter++);
+
+        
+        LOGK("test unlock...\n");
+        lock_release(&lock);
+        // mutex_unlock(&mutex);
     }
 }
