@@ -25,16 +25,7 @@ void init_thread() {
     set_interrupt_state(true);
     u32 counter = 0;
     while(true) {
-        // mutex_lock(&mutex);
-        lock_acquire(&lock);
-        
-        LOGK("init lock...\n");
-        // LOGK("init_task...%d\n", counter++);
-
-        
-        LOGK("init unlock...\n");
-        lock_release(&lock);
-        // mutex_unlock(&mutex);
+        sleep(700);
     }
 }
 
@@ -42,15 +33,6 @@ void test_thread() {
     set_interrupt_state(true);
     u32 counter = 0;
     while(true) {
-        // mutex_lock(&mutex);
-        lock_acquire(&lock);
-
-        LOGK("test lock...\n");
-        // LOGK("test_task...%d\n", counter++);
-
-        
-        LOGK("test unlock...\n");
-        lock_release(&lock);
-        // mutex_unlock(&mutex);
+        sleep(800);
     }
 }

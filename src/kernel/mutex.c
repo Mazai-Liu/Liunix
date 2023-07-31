@@ -91,8 +91,7 @@ void lock_release(lock_t *lock) {
     assert(lock->holder == current);
     lock->repeat--;
     if(lock->repeat == 0) {
-        mutex_unlock(&lock->mutex);
         lock->holder = NULL;
-        
+        mutex_unlock(&lock->mutex);   //  不能与上行交换顺序，并发问题
     }
 }
