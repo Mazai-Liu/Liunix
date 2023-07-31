@@ -1,6 +1,6 @@
 *.txt
 *.vscode
-*.ini
+*/*/.ini
 build/*
 src/bochsrc
 src/*.ini
