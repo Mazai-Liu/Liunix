@@ -23,11 +23,11 @@
 
 ### x86实模式物理内存布局
 
-<img src="D:\Code\Projects\C++\Liunix\imgs\README\image-20230628224728936.png" alt="image-20230628224728936" style="zoom:150%;" />
+<img src=".\imgs\README\image-20230628224728936.png" alt="image-20230628224728936" style="zoom:150%;" />
 
 ### 启动流程
 
-<img src="D:\Code\Projects\C++\Liunix\imgs\README\实模式内存布局.drawio-1688023828911.svg" alt="实模式内存布局.drawio" style="zoom:150%;" />
+<img src=".\imgs\README\实模式内存布局.drawio-1688023828911.svg" alt="实模式内存布局.drawio" style="zoom:150%;" />
 
 1. 通电，CPU处于实模式。CS=0xFFFF，IP=0x0000	===>	0xFFFF0。
 
@@ -59,7 +59,7 @@
 
 根据ards统计物理内存大小和开始位置（memroy_base），并计算页面数，每页4KB。
 
-<img src="D:\Code\Projects\C++\Liunix\imgs\README\内存初始化图.drawio.svg" alt="内存初始化图.drawio" style="zoom:150%;" />
+<img src=".\imgs\README\内存初始化图.drawio.svg" alt="内存初始化图.drawio" style="zoom:150%;" />
 
 ### 内存映射
 
@@ -121,23 +121,23 @@ typedef struct page_entry_t
 
 地址构成：
 
-![Liunix-内存映射.drawio](D:\Code\Projects\C++\Liunix\imgs\README\Liunix-内存映射.drawio-1688132466980.svg)
+![Liunix-内存映射.drawio](.\imgs\README\Liunix-内存映射.drawio-1688132466980.svg)
 
 页目录pte：
 
-![memory_pde.drawio](D:\Code\Projects\C++\Liunix\imgs\README\memory_pde.drawio.svg)
+![memory_pde.drawio](.\imgs\README\memory_pde.drawio.svg)
 
 页表pte：
 
-![memory_pte.drawio](D:\Code\Projects\C++\Liunix\imgs\README\memory_pte.drawio.svg)
+![memory_pte.drawio](.\imgs\README\memory_pte.drawio.svg)
 
 地址映射关系：
 
-![Liunix-页目录（二级页表）.drawio](D:\Code\Projects\C++\Liunix\imgs\README\Liunix-页目录（二级页表）.drawio-1688132428685.svg)
+![Liunix-页目录（二级页表）.drawio](.\imgs\README\Liunix-页目录（二级页表）.drawio-1688132428685.svg)
 
 ### 内核内存映射
 
-![Liunix-内核内存映射.drawio](D:\Code\Projects\C++\Liunix\imgs\README\Liunix-内核内存映射.drawio.svg)
+![Liunix-内核内存映射.drawio](.\imgs\README\Liunix-内核内存映射.drawio.svg)
 
 内核内存8M，需要2页页表。
 
@@ -155,11 +155,11 @@ static u32 KERNEL_PAGE_TABLE[] = {
 
 ### 内存布局
 
-![Liunix-内存布局.drawio](D:\Code\Projects\C++\Liunix\imgs\README\Liunix-内存布局.drawio.svg)
+![Liunix-内存布局.drawio](.\imgs\README\Liunix-内存布局.drawio.svg)
 
 ## 内核线程
 
-![Liunix-内核进程.drawio](D:\Code\Projects\C++\Liunix\imgs\README\Liunix-内核进程.drawio.svg)
+![Liunix-内核进程.drawio](.\imgs\README\Liunix-内核进程.drawio.svg)
 
 线程（进程）结构体，task_t。
 
