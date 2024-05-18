@@ -121,23 +121,23 @@ typedef struct page_entry_t
 
 地址构成：
 
-![Liunix-内存映射.drawio](.\imgs\README\Liunix-内存映射.drawio-1688132466980.svg)
+<img src="./imgs/README/Liunix-neicunyingshe.drawio-1688132466980.svg" alt="Liunix-neicunyingshe.drawio-1688132466980" />
 
 页目录pte：
 
-![memory_pde.drawio](.\imgs\README\memory_pde.drawio.svg)
+<img src=".\imgs\README\memory_pde.drawio.svg" alt="memory_pde.drawio" />
 
 页表pte：
 
-![memory_pte.drawio](.\imgs\README\memory_pte.drawio.svg)
+<img src=".\imgs\README\memory_pte.drawio.svg" alt="memory_pte.drawio" />
 
 地址映射关系：
 
-![Liunix-页目录（二级页表）.drawio](.\imgs\README\Liunix-页目录（二级页表）.drawio-1688132428685.svg)
+<img src=".\imgs\README\Liunix-页目录（二级页表）.drawio-1688132428685.svg" alt="Liunix-页目录（二级页表）.drawio" />
 
 ### 内核内存映射
 
-![Liunix-内核内存映射.drawio](.\imgs\README\Liunix-内核内存映射.drawio.svg)
+<img src=".\imgs\README\Liunix-内核内存映射.drawio.svg" alt="Liunix-内核内存映射.drawio" />
 
 内核内存8M，需要2页页表。
 
@@ -155,11 +155,11 @@ static u32 KERNEL_PAGE_TABLE[] = {
 
 ### 内存布局
 
-![Liunix-内存布局.drawio](.\imgs\README\Liunix-内存布局.drawio.svg)
+<img src=".\imgs\README\Liunix-内存布局.drawio.svg" alt="Liunix-内存布局.drawio" />
 
 ## 内核线程
 
-![Liunix-内核进程.drawio](.\imgs\README\Liunix-内核进程.drawio.svg)
+<img src=".\imgs\README\Liunix-内核进程.drawio.svg" alt="Liunix-内核进程.drawio" />
 
 线程（进程）结构体，task_t。
 
